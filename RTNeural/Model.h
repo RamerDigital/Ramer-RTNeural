@@ -30,7 +30,10 @@ namespace RTNEURAL_NAMESPACE
  *  Instances of this class should typically be created
  *  `json_parser::parseJson`.
  */
-template <typename T>
+#include <concepts>
+#include <span>
+
+template <std::floating_point T>
 class Model
 {
 public:
@@ -96,6 +99,25 @@ public:
     RTNEURAL_REALTIME inline const T* getOutputs() const noexcept
     {
         return outs.back().data();
+    }
+
+    /** Performs forward propagation for this model using std::span for safety. */
+    RTNEURAL_REALTIME inline T forward(std::span<const T> input)
+    {
+        return forward(input.data());
+    }
+
+    /** Performs forward propagation and stores the output in a target span. */
+    RTNEURAL_REALTIME inline void forward(std::span<const T> input, std::span<T> output)
+    {
+        forward(input.data());
+        std::copy(outs.back().begin(), outs.back().begin() + getOutSize(), output.begin());
+    }
+
+    /** Returns a std::span to the output of the final layer in the network. */
+    RTNEURAL_REALTIME inline std::span<const T> getOutputsSpan() const noexcept
+    {
+        return { outs.back().data(), static_cast<std::size_t>(getOutSize()) };
     }
 
     /** A vector storing the network layers in sequential order. */

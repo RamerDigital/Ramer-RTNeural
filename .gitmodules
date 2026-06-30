@@ -1,3 +1,11 @@
-[submodule "modules/xsimd"]
-	path = modules/xsimd
-	url = https://github.com/xtensor-stack/xsimd
+[submodule "third-party/Eigen"]
+	path = third-party/Eigen
+	url = https://github.com/RamerDigital/Ramer-eigen.git
+
+[submodule "third-party/json"]
+	path = third-party/json
+	url = https://github.com/RamerDigital/Ramer-nlohmann-json.git
+
+[submodule "third-party/xsimd"]
+	path = third-party/xsimd
+	url = https://github.com/RamerDigital/Ramer-xsimd.git
