@@ -6,6 +6,7 @@ include(cmake/Sanitizers.cmake)
 add_subdirectory(RTNeural)
 
 include(cmake/SIMDExtensions.cmake)
+include(cmake/AppleSilicon.cmake)
 include(cmake/ChooseBackend.cmake)
 
 option(BUILD_TESTS "Build RTNeural accuracy tests" OFF)
