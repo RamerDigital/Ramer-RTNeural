@@ -1,6 +1,8 @@
 #include <RTNeural/RTNeural.h>
 #include <filesystem>
 #include <iostream>
+#include <array>
+#include <span>
 
 namespace fs = std::filesystem;
 
@@ -28,8 +30,8 @@ int main(int argc, char* argv[])
     std::ifstream jsonStream(modelFilePath, std::ifstream::binary);
     auto model = RTNeural::json_parser::parseJson<float>(jsonStream, true);
 
-    float testInput[1] = { 5.0f };
-    float testOutput = model->forward(testInput);
+    std::array<float, 1> testInput = { 5.0f };
+    float testOutput = model->forward(std::span{ testInput });
     std::cout << "Test output: " << testOutput << std::endl;
 
     return 0;

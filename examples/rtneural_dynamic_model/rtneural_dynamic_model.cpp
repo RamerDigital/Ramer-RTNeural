@@ -1,5 +1,6 @@
 #include <iostream>
 #include <RTNeural/RTNeural.h>
+#include <span>
 
 int main(int argc, char* argv[])
 {
@@ -18,7 +19,7 @@ int main(int argc, char* argv[])
     auto inputSize = model->layers[0]->in_size;
     std::vector<float> testInput (inputSize, 5.0f);
 
-    float testOutput = model->forward (testInput.data());
+    float testOutput = model->forward (std::span{ testInput });
     std::cout << "Test output: " << testOutput << std::endl;
 
     return 0;
