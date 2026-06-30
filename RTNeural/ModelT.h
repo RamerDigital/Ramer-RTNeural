@@ -1,6 +1,8 @@
 #pragma once
 
 #include "model_loader.h"
+#include <concepts>
+#include <span>
 
 namespace RTNEURAL_NAMESPACE
 {
@@ -331,7 +333,7 @@ namespace modelt_detail
  *  > model;
  *  ```
  */
-template <typename T, int in_size, int out_size, typename... Layers>
+template <std::floating_point T, int in_size, int out_size, typename... Layers>
 class ModelT
 {
 public:
@@ -373,8 +375,8 @@ public:
 
     /** Performs forward propagation for this model. */
     template <int N = in_size>
-    RTNEURAL_REALTIME inline typename std::enable_if<(N > 1), T>::type
-    forward(const T* input)
+    RTNEURAL_REALTIME inline T
+    forward(const T* input) requires (N > 1)
     {
 #if RTNEURAL_USE_XSIMD
         for(int i = 0; i < v_in_size; ++i)
@@ -400,8 +402,8 @@ public:
 
     /** Performs forward propagation for this model. */
     template <int N = in_size>
-    RTNEURAL_REALTIME inline typename std::enable_if<N == 1, T>::type
-    forward(const T* input)
+    RTNEURAL_REALTIME inline T
+    forward(const T* input) requires (N == 1)
     {
 #if RTNEURAL_USE_XSIMD
         v_ins[0] = (v_type)input[0];
@@ -429,6 +431,25 @@ public:
     RTNEURAL_REALTIME inline const T* getOutputs() const noexcept
     {
         return outs;
+    }
+
+    /** Performs forward propagation for this model using std::span. */
+    RTNEURAL_REALTIME inline T forward(std::span<const T> input)
+    {
+        return forward(input.data());
+    }
+
+    /** Performs forward propagation and stores the output in a target span. */
+    RTNEURAL_REALTIME inline void forward(std::span<const T> input, std::span<T> output)
+    {
+        forward(input.data());
+        std::copy(outs, outs + out_size, output.begin());
+    }
+
+    /** Returns a std::span to the output of the final layer in the network. */
+    RTNEURAL_REALTIME inline std::span<const T> getOutputsSpan() const noexcept
+    {
+        return { outs, static_cast<std::size_t>(out_size) };
     }
 
     /** Loads neural network model weights from a json stream. */
@@ -485,7 +506,7 @@ using ModelT2D = ModelT<T, num_filters_in * num_features_in, num_filters_out * n
  * This API is still somewhat unstable, so maybe hold off on using it for now,
  * unless you're in the mood to help with debugging.
  */
-template <typename T, int num_filters_in, int num_features_in, int num_filters_out, int num_features_out, typename... Layers>
+template <std::floating_point T, int num_filters_in, int num_features_in, int num_filters_out, int num_features_out, typename... Layers>
 class ModelT2D
 {
     using v_type = xsimd::simd_type<T>;
@@ -557,6 +578,25 @@ public:
     inline const T* getOutputs() const noexcept
     {
         return outs;
+    }
+
+    /** Performs forward propagation for this model using std::span. */
+    inline T forward(std::span<const T> input)
+    {
+        return forward(input.data());
+    }
+
+    /** Performs forward propagation and stores the output in a target span. */
+    inline void forward(std::span<const T> input, std::span<T> output)
+    {
+        forward(input.data());
+        std::copy(outs, outs + output_size, output.begin());
+    }
+
+    /** Returns a std::span to the output of the final layer in the network. */
+    inline std::span<const T> getOutputsSpan() const noexcept
+    {
+        return { outs, static_cast<std::size_t>(output_size) };
     }
 
     /** Loads neural network model weights from a json stream. */

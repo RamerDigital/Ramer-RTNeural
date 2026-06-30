@@ -1,6 +1,8 @@
 #include <iostream>
 #include <filesystem>
 #include <RTNeural/RTNeural.h>
+#include <array>
+#include <span>
 
 namespace fs = std::filesystem;
 
@@ -39,8 +41,8 @@ int main(int argc, char* argv[])
 
     model.parseJson (jsonStream, true);
 
-    float testInput[1] = { 5.0f };
-    float testOutput = model.forward (testInput);
+    std::array<float, 1> testInput = { 5.0f };
+    float testOutput = model.forward (std::span{ testInput });
     std::cout << "Test output: " << testOutput << std::endl;
 
     return 0;

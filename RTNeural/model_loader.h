@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../third-party/json/json.hpp"
+#include <nlohmann/json.hpp>
 #include "Model.h"
 #include <fstream>
 #include <memory>
 #include <string>
+#include <span>
 
 #if !RTNEURAL_NO_DEBUG
 #include <iostream>
@@ -727,6 +728,14 @@ namespace json_parser
     {
         nlohmann::json parent;
         jsonStream >> parent;
+        return parseJson<T>(parent, debug);
+    }
+
+    /** Creates a neural network model from a raw JSON data span. */
+    template <typename T>
+    std::unique_ptr<Model<T>> parseJson(std::span<const char> jsonData, const bool debug = false)
+    {
+        auto parent = nlohmann::json::parse(jsonData.begin(), jsonData.end());
         return parseJson<T>(parent, debug);
     }
 
