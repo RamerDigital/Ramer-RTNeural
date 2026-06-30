@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../modules/json/json.hpp"
+#include "../third-party/json/json.hpp"
 #include "Model.h"
 #include <fstream>
 #include <memory>
