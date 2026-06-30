@@ -844,7 +844,7 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = ../docs/ \
-                         ../modules/ \
+                         ../third-party/ \
                          ../doxygen \
                          ../bench/ \
                          ../build/ \

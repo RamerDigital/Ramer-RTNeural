@@ -1,10 +1,10 @@
 CXXFLAGS = -O3 -I../../ -std=c++17 -DRTNEURAL_DEFAULT_ALIGNMENT=16
 
 # Extra flags for compiling with Eigen backend
-# CXXFLAGS += -DRTNEURAL_USE_EIGEN=1 -I../../modules/Eigen
+# CXXFLAGS += -DRTNEURAL_USE_EIGEN=1 -I../../third-party/Eigen
 
 # Extra flags for compiling with XSIMD backend
-# CXXFLAGS += -DRTNEURAL_USE_XSIMD=1 -I../../modules/xsimd/include
+# CXXFLAGS += -DRTNEURAL_USE_XSIMD=1 -I../../third-party/xsimd/include
 
 SRCS=hello_rtneural.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
