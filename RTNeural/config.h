@@ -5,17 +5,11 @@
 #endif
 
 #ifndef RTNEURAL_DEFAULT_ALIGNMENT
-#if _MSC_VER
-#pragma message("RTNEURAL_DEFAULT_ALIGNMENT was not defined! Using default alignment = 16.")
-#else
 #warning "RTNEURAL_DEFAULT_ALIGNMENT was not defined! Using default alignment = 16."
-#endif
 #define RTNEURAL_DEFAULT_ALIGNMENT 16
 #endif
 
-#if defined(_MSVC_LANG)
-#define RTNEURAL_CPLUSPLUS _MSVC_LANG
-#elif defined(__cplusplus)
+#if defined(__cplusplus)
 #define RTNEURAL_CPLUSPLUS __cplusplus
 #endif
 
