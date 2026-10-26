@@ -333,10 +333,12 @@ private:
         for(int k = 0; k < v_out_size; ++k)
         {
             vec[k].store_aligned(scalar_in);
-            for(int i = 0; i < v_out_size; ++i)
+            const int j_limit = std::min(v_size, out_size - k * v_size);
+            for(int j = 0; j < j_limit; ++j)
             {
-                for(int j = 0; j < v_size; ++j)
-                    out[i] += scalar_in[j] * mat[k * v_size + j][i];
+                const auto s = v_type(scalar_in[j]);
+                for(int i = 0; i < v_out_size; ++i)
+                    out[i] = xsimd::fma(s, mat[k * v_size + j][i], out[i]);
             }
         }
     }
@@ -350,10 +352,12 @@ private:
         for(int k = 0; k < v_in_size; ++k)
         {
             vec[k].store_aligned(scalar_in);
-            for(int i = 0; i < v_out_size; ++i)
+            const int j_limit = std::min(v_size, in_size - k * v_size);
+            for(int j = 0; j < j_limit; ++j)
             {
-                for(int j = 0; j < v_size; ++j)
-                    out[i] += scalar_in[j] * mat[k * v_size + j][i];
+                const auto s = v_type(scalar_in[j]);
+                for(int i = 0; i < v_out_size; ++i)
+                    out[i] = xsimd::fma(s, mat[k * v_size + j][i], out[i]);
             }
         }
     }

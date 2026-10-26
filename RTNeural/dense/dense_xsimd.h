@@ -162,8 +162,6 @@ public:
     template <bool b = has_bias>
     RTNEURAL_REALTIME inline typename std::enable_if<b>::type forward(const v_type (&ins)[v_in_size]) noexcept
     {
-        static constexpr auto v_size_inner = std::min(v_size, in_size);
-
         for(int i = 0; i < v_out_size; ++i)
             outs[i] = bias[i];
 
@@ -171,10 +169,12 @@ public:
         for(int k = 0; k < v_in_size; ++k)
         {
             ins[k].store_aligned(scalar_in);
-            for(int i = 0; i < v_out_size; ++i)
+            const int j_limit = std::min(v_size, in_size - k * v_size);
+            for(int j = 0; j < j_limit; ++j)
             {
-                for(int j = 0; j < v_size_inner; ++j)
-                    outs[i] += scalar_in[j] * weights[k * v_size + j][i];
+                const auto s = v_type(scalar_in[j]);
+                for(int i = 0; i < v_out_size; ++i)
+                    outs[i] = xsimd::fma(s, weights[k * v_size + j][i], outs[i]);
             }
         }
     }
@@ -183,8 +183,6 @@ public:
     template <bool b = has_bias>
     RTNEURAL_REALTIME inline typename std::enable_if<!b>::type forward(const v_type (&ins)[v_in_size]) noexcept
     {
-        static constexpr auto v_size_inner = std::min(v_size, in_size);
-
         for(int i = 0; i < v_out_size; ++i)
             outs[i] = v_type((T)0.0);
 
@@ -192,10 +190,12 @@ public:
         for(int k = 0; k < v_in_size; ++k)
         {
             ins[k].store_aligned(scalar_in);
-            for(int i = 0; i < v_out_size; ++i)
+            const int j_limit = std::min(v_size, in_size - k * v_size);
+            for(int j = 0; j < j_limit; ++j)
             {
-                for(int j = 0; j < v_size_inner; ++j)
-                    outs[i] += scalar_in[j] * weights[k * v_size + j][i];
+                const auto s = v_type(scalar_in[j]);
+                for(int i = 0; i < v_out_size; ++i)
+                    outs[i] = xsimd::fma(s, weights[k * v_size + j][i], outs[i]);
             }
         }
     }
@@ -292,9 +292,9 @@ public:
     template <bool b = has_bias>
     RTNEURAL_REALTIME inline typename std::enable_if<b>::type forward(const v_type (&ins)[v_in_size]) noexcept
     {
-        v_type y {};
+        v_type y = v_type((T)0.0);
         for(int k = 0; k < v_in_size; ++k)
-            y += ins[k] * weights[k];
+            y = xsimd::fma(ins[k], weights[k], y);
 
         outs[0] = v_type(xsimd::reduce_add(y) + bias);
     }
@@ -302,9 +302,9 @@ public:
     template <bool b = has_bias>
     RTNEURAL_REALTIME inline typename std::enable_if<!b>::type forward(const v_type (&ins)[v_in_size]) noexcept
     {
-        v_type y {};
+        v_type y = v_type((T)0.0);
         for(int k = 0; k < v_in_size; ++k)
-            y += ins[k] * weights[k];
+            y = xsimd::fma(ins[k], weights[k], y);
 
         outs[0] = v_type(xsimd::reduce_add(y));
     }
@@ -398,12 +398,9 @@ public:
     template <bool b = has_bias>
     RTNEURAL_REALTIME inline typename std::enable_if<b>::type forward(const v_type (&ins)[1]) noexcept
     {
+        const auto in = v_type(ins[0].get(0));
         for(int i = 0; i < v_out_size; ++i)
-            outs[i] = bias[i];
-
-        const auto in = ins[0].get(0);
-        for(int i = 0; i < v_out_size; ++i)
-            outs[i] += in * weights[i];
+            outs[i] = xsimd::fma(in, weights[i], bias[i]);
     }
 
     /** Performs forward propagation for this layer (no bias). */
