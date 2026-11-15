@@ -1,6 +1,8 @@
 #ifndef MODEL_H_INCLUDED
 #define MODEL_H_INCLUDED
 
+#include <concepts>
+#include <span>
 #include <vector>
 
 #include "Layer.h"
@@ -30,9 +32,6 @@ namespace RTNEURAL_NAMESPACE
  *  Instances of this class should typically be created
  *  `json_parser::parseJson`.
  */
-#include <concepts>
-#include <span>
-
 template <std::floating_point T>
 class Model
 {

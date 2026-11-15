@@ -1,4 +1,4 @@
-CXXFLAGS = -O3 -I../../ -std=c++17 -DRTNEURAL_DEFAULT_ALIGNMENT=16
+CXXFLAGS = -O3 -I../../ -I../../third-party/json/single_include -std=c++20 -DRTNEURAL_DEFAULT_ALIGNMENT=16
 
 # Extra flags for compiling with Eigen backend
 # CXXFLAGS += -DRTNEURAL_USE_EIGEN=1 -I../../third-party/Eigen

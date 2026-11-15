@@ -38,13 +38,16 @@ add_library(RTNeural STATIC
     RTNeural.cpp
 )
 
+add_library(RTNeural::RTNeural ALIAS RTNeural)
+
 set_property(TARGET RTNeural PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_target_properties(RTNeural PROPERTIES LINKER_LANGUAGE CXX)
+target_compile_features(RTNeural PUBLIC cxx_std_20)
 target_include_directories(RTNeural
-    PUBLIC
-        ../third-party/json/single_include
-    INTERFACE
-        ..
+    SYSTEM PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/../third-party/json/single_include"
+    SYSTEM INTERFACE
+        "${CMAKE_CURRENT_SOURCE_DIR}/.."
 )
 set(RTNEURAL_NAMESPACE "RTNeural" CACHE STRING "Namespace to use for RTNeural code")
 target_compile_definitions(RTNeural

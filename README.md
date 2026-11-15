@@ -1,3 +1,48 @@
+## Ramer Digital Fork — Apple Silicon ARM64 NEON, C++20 & Cache Optimization
+
+This repository is a specialized fork of **`RTNeural`** maintained by **Ramer Digital** (`ramerdigital.com`), tailored for **Apple Silicon (`arm64`)**, **C++20**, and strict real-time CMake builds.
+
+### Objective
+
+Provide a low-latency, cache-friendly neural network inferencing library optimized for Apple Silicon ARM64 NEON, modernized to C++20, and integrated cleanly with Ramer Digital's `third-party/` dependency forks.
+
+### Summary of Modifications
+
+* **L1 Cache Row-Streaming & Hardware `xsimd::fma` (`LSTMLayerT` & `DenseT`)**:
+  * Reordered weight matrix inner loops (`k -> j -> i`) in [`RTNeural/lstm/lstm_xsimd.h`](RTNeural/lstm/lstm_xsimd.h) and [`RTNeural/dense/dense_xsimd.h`](RTNeural/dense/dense_xsimd.h) for contiguous row-streaming memory access instead of column-strided traversal.
+  * Replaced separate multiply-accumulate operations with `xsimd::fma` to emit native ARM64 NEON fused multiply-add instructions (`fmla`).
+* **Out-of-Bounds Read Fix for Non-SIMD-Aligned Dimensions**:
+  * Bounded inner `j` loops via `std::min(v_size, in_size - k * v_size)` (and `out_size - k * v_size` in recurrent matrix multiplication) in [`RTNeural/lstm/lstm_xsimd.h`](RTNeural/lstm/lstm_xsimd.h) and [`RTNeural/dense/dense_xsimd.h`](RTNeural/dense/dense_xsimd.h), eliminating out-of-bounds reads and redundant operations when layer sizes are not multiples of SIMD register width `v_size`.
+* **C++20 Modernization, Concepts & `std::span` Overloads**:
+  * Enforced C++20 (`cxx_std_20`) in [`cmake/CXXStandard.cmake`](cmake/CXXStandard.cmake) and [`RTNeural/CMakeLists.txt`](RTNeural/CMakeLists.txt).
+  * Constrained `Layer`, `Model`, `ModelT`, and `ModelT2D` with `std::floating_point<T>` and C++20 `requires` clauses, and added `std::span` overloads across [`RTNeural/Layer.h`](RTNeural/Layer.h), [`RTNeural/Model.h`](RTNeural/Model.h), [`RTNeural/ModelT.h`](RTNeural/ModelT.h), [`RTNeural/model_loader.h`](RTNeural/model_loader.h), and the examples under `examples/`.
+* **Embedded Modern `xsimd` Algorithms**:
+  * Removed `RTNeural/xsimd-legacy` and embedded modern `xsimd::transform` and `xsimd::reduce` implementations directly in [`RTNeural/common.h`](RTNeural/common.h).
+* **Apple Silicon CMake & Normalized `third-party/` Submodules**:
+  * Added [`cmake/AppleSilicon.cmake`](cmake/AppleSilicon.cmake) (`-mcpu=apple-m1` via `RTNEURAL_APPLE_M_CPU`, ThinLTO via `RTNEURAL_LTO`, optional `RTNEURAL_APPLE_FAST_MATH`) matching both native `arm64` hosts and cross-compiled `CMAKE_OSX_ARCHITECTURES=arm64` targets.
+  * Simplified [`cmake/SIMDExtensions.cmake`](cmake/SIMDExtensions.cmake) to fixed 16-byte alignment (`RTNEURAL_DEFAULT_ALIGNMENT=16`) and removed upstream `.github/workflows`.
+  * Normalized submodules under `third-party/` ([`.gitmodules`](.gitmodules)) to track Ramer Digital's `main`-branch forks (`Ramer-eigen`, `Ramer-nlohmann-json`, `Ramer-xsimd`), and exposed headers via `SYSTEM PUBLIC` / `SYSTEM INTERFACE` includes with the `RTNeural::RTNeural` CMake alias for strict `-Werror` downstream targets.
+
+### Usage
+
+```bash
+git clone --recursive https://github.com/RamerDigital/Ramer-RTNeural.git
+```
+
+In a parent `CMakeLists.txt`:
+
+```cmake
+set(RTNEURAL_XSIMD ON CACHE BOOL "Use RTNeural with XSIMD backend" FORCE) # or RTNEURAL_EIGEN=ON / RTNEURAL_STL=ON
+add_subdirectory(third-party/Ramer-RTNeural)
+target_link_libraries(your_target PRIVATE RTNeural::RTNeural)
+```
+
+### License
+
+All upstream **BSD 3-Clause License** terms and copyrights in [`LICENSE`](LICENSE) are preserved.
+
+---
+
 <p align=center>
   <picture>
     <img src="./doxygen/logo.png" height="200"/>
